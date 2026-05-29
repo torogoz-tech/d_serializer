@@ -1,6 +1,6 @@
 name: d_serializer
 description: "Dart serialization library with invisible code generation"
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/your-username/d_serializer
 topics:
   - serialization
