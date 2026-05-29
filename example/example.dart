@@ -6,39 +6,33 @@ enum Status { active, inactive, pending }
 
 @Serializable()
 class User {
-  String name;
-  int age;
-  String? email;
-  Status status;
-  DateTime createdAt;
-  List<String> roles;
-  Map<String, dynamic> metadata;
+  final String name;
+  final int age;
+  final Status status;
+  final DateTime createdAt;
 
   User({
     required this.name,
     required this.age,
-    this.email,
     required this.status,
     required this.createdAt,
-    required this.roles,
-    required this.metadata,
   });
 }
 
 void main() {
-  final user = User(
-    name: 'John Doe',
+  // En archivos fuera de lib/, usa el registro generado del propio modelo.
+  registerUserSerializer();
+
+  final User user = User(
+    name: 'John',
     age: 30,
-    email: 'john@example.com',
     status: Status.active,
-    createdAt: DateTime.now(),
-    roles: ['admin', 'user'],
-    metadata: {'theme': 'dark', 'notifications': true},
+    createdAt: DateTime.parse('2026-05-29T10:00:00Z'),
   );
 
-  final json = user.toJson();
-  print('toJson: ${json}');
+  final String json = Serializer.toJson<User>(user);
+  final User restored = Serializer.fromJson<User>(json);
 
-  final restored = _$UserFromJson(json);
-  print('fromJson: ${restored.name}, ${restored.age}, ${restored.status}');
+  print(json);
+  print('${restored.name} - ${restored.status.name} - ${restored.createdAt.toIso8601String()}');
 }

@@ -1,163 +1,203 @@
 # d_serializer
 
-**Dart serialization library with invisible code generation**
+Serializacion JSON con API estatica tipo `System.Text.Json` y soporte por anotaciones.
 
-Unlike other serialization packages, `d_serializer` generates code that is invisible to you. The generated file is a `part of` your source file, keeping your codebase clean.
+## API
 
-## Features
+- `Serializer.toJson<T>(value)`
+- `Serializer.fromJson<T>(json)`
 
-- **Invisible code generation** - Generated files are `part of` your model
-- **Annotations** - Simple `@Serializable()` class annotation
-- **Type support** - Primitives, DateTime, List, Map, enums, nested objects
-- **@JsonKey** - Customize field names and ignore fields
-- **Extensions** - `toJson()` method available directly on classes
+## Flujo
 
-## Usage
-
-### 1. Add dependencies
-
-```yaml
-dependencies:
-  d_serializer: ^1.0.0
-
-dev_dependencies:
-  build_runner: ^2.4.0
-  d_serializer_builder: ^1.0.0
-```
-
-### 2. Create a model
-
-```dart
-import 'package:d_serializer/d_serializer.dart';
-
-part 'model.g.dart';
-
-@Serializable()
-class User {
-  String name;
-  int age;
-  String? email;
-
-  User({required this.name, required this.age, this.email});
-}
-```
-
-### 3. Add `part` directive
-
-```dart
-import 'package:d_serializer/d_serializer.dart';
-
-part 'model.g.dart'; // This is auto-generated
-
-@Serializable()
-class User {
-  String name;
-  int age;
-  String? email;
-
-  User({required this.name, required this.age, this.email});
-}
-```
-
-### 4. Run build_runner
+1. Anota modelos con `@Serializable()`.
+2. Ejecuta generacion:
 
 ```bash
-dart run build_runner build
+dart run build_runner build --delete-conflicting-outputs
 ```
 
-### 5. Use it
+3. Inicializa una sola vez:
 
 ```dart
-final user = User(name: 'John', age: 30);
+import 'd_serializer_registry.g.dart';
 
-// Extension method - toJson() available directly
-final json = user.toJson();
-
-// Generated fromJson function
-final restored = _$UserFromJson(json);
-```
-
-## @JsonKey
-
-Customize serialization with `@JsonKey`:
-
-```dart
-@Serializable()
-class User {
-  @JsonKey(name: 'full_name')
-  String name;
-  
-  @JsonKey(ignore: true)
-  String? temporary;
-  
-  @JsonKey(useEnumIndex: true)
-  Status status;
+void main() {
+  initializeDSerializer();
 }
 ```
 
-## Type Support
+## ¿Siempre hay que correr build?
 
-| Type | Serialization |
-|------|---------------|
-| int, double | number |
-| String | string |
-| bool | boolean |
-| DateTime | ISO8601 string |
-| List<T> | JSON array |
-| Map<K,V> | JSON object |
-| Enum | string name (or index with `useEnumIndex`) |
-| @Serializable | nested object |
+No en cada run.
 
-## Why d_serializer?
+- Si cambias/agregas modelos anotados: si debes regenerar.
+- Si no cambias modelos: no hace falta regenerar manualmente.
 
-| Feature | json_serializable | freezed | d_serializer |
-|---------|-------------------|---------|--------------|
-| Generated files visible | `.g.dart` | `.freezed.dart` + `.g.dart` | **Invisible** (`part of`) |
-| User sees clean code | No | No | **Yes** |
+Desarrollo recomendado:
 
-## Example
+```bash
+dart run build_runner watch --delete-conflicting-outputs
+```
+
+CI/release:
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+## Archivos generados
+
+- `*.g.dart`: mapeo por modelo (to/from + registro por tipo)
+- `d_serializer_registry.g.dart`: inicializacion central (`initializeDSerializer`)
+
+No se editan manualmente.
+
+## Anotaciones
+
+### Clase
+
+```dart
+@Serializable(
+  rename: 'AliasOpcional',
+  discriminator: 'order',
+  typeField: 'type',
+  strict: true,
+  naming: JsonNaming.snakeCase,
+)
+```
+
+- `rename`: alias de clase (tambien se usa como discriminador por defecto)
+- `discriminator`: valor de discriminador esperado/escrito
+- `typeField`: nombre del campo discriminador en JSON
+- `strict`: falla si vienen keys desconocidas
+- `naming`: estrategia de nombres (`none`, `snakeCase`)
+
+### Campo
+
+```dart
+@JsonKey(
+  name: 'custom_name',
+  ignore: false,
+  defaultValue: 0,
+  converter: 'Money',
+  useEnumIndex: false,
+  requiredKey: true,
+  unknownEnumValue: 'unknown',
+)
+```
+
+- `defaultValue`: aplica cuando el valor viene `null`/ausente
+- `converter`: prefijo de funciones converter
+- `requiredKey`: obliga presencia del campo
+- `unknownEnumValue`: fallback por nombre para enums
+
+## Converter custom
+
+No se registra en `Serializer`; se declara como funciones top-level visibles por la libreria del modelo.
+
+```dart
+class Money {
+  final int cents;
+  const Money(this.cents);
+}
+
+Object? MoneyToJson(dynamic value) => (value as Money).cents;
+Money MoneyFromJson(dynamic value) => Money((value as num).toInt());
+
+@Serializable()
+class Invoice {
+  @JsonKey(converter: 'Money')
+  final Money total;
+
+  Invoice({required this.total});
+}
+```
+
+## Ejemplo completo
 
 ```dart
 import 'package:d_serializer/d_serializer.dart';
+import 'd_serializer_registry.g.dart';
 
-part 'model.g.dart';
+part 'invoice.g.dart';
 
-enum Status { active, inactive }
+enum Status { active, unknown }
 
-@Serializable()
-class User {
-  String name;
-  int age;
-  Status status;
-  DateTime createdAt;
-  List<String> roles;
+class Money {
+  final int cents;
+  const Money(this.cents);
+}
 
-  User({
-    required this.name,
-    required this.age,
+Object? MoneyToJson(dynamic value) => (value as Money).cents;
+Money MoneyFromJson(dynamic value) => Money((value as num).toInt());
+
+@Serializable(strict: true, naming: JsonNaming.snakeCase, typeField: 'kind', discriminator: 'invoice')
+class Invoice {
+  @JsonKey(requiredKey: true)
+  final int id;
+
+  @JsonKey(defaultValue: true)
+  final bool enabled;
+
+  @JsonKey(converter: 'Money')
+  final Money total;
+
+  @JsonKey(unknownEnumValue: 'unknown')
+  final Status status;
+
+  final Uri endpoint;
+  final BigInt reference;
+  final Duration timeout;
+  final Set<String> tags;
+
+  Invoice({
+    required this.id,
+    required this.enabled,
+    required this.total,
     required this.status,
-    required this.createdAt,
-    required this.roles,
+    required this.endpoint,
+    required this.reference,
+    required this.timeout,
+    required this.tags,
   });
 }
 
 void main() {
-  final user = User(
-    name: 'John',
-    age: 30,
+  initializeDSerializer();
+
+  final invoice = Invoice(
+    id: 10,
+    enabled: true,
+    total: const Money(1500),
     status: Status.active,
-    createdAt: DateTime.now(),
-    roles: ['admin'],
+    endpoint: Uri.parse('https://api.example.com'),
+    reference: BigInt.parse('12345678901234567890'),
+    timeout: const Duration(seconds: 5),
+    tags: <String>{'vip'},
   );
 
-  final json = user.toJson();
-  print(json);
+  final String json = Serializer.toJson<Invoice>(invoice);
+  final Invoice restored = Serializer.fromJson<Invoice>(json);
 
-  final restored = _$UserFromJson(json);
-  print(restored.name);
+  print(json);
+  print(restored.total.cents);
 }
 ```
 
-## License
+## Tipos soportados
 
-MIT
+- `int`, `double`, `String`, `bool`, `dynamic`
+- `DateTime`, `Uri`, `BigInt`, `Duration`
+- `List<T>`, `Set<T>`, `Map<String, T>`
+- `enum` (por nombre o indice)
+- modelos anidados `@Serializable()`
+
+## Troubleshooting
+
+- `Type X is not registered`:
+  - corre `build_runner`
+  - llama `initializeDSerializer()` al inicio
+- converter no encontrado:
+  - define `XToJson` y `XFromJson` top-level y visibles
+- campos desconocidos con `strict: true`:
+  - revisa payload o desactiva strict
