@@ -1,0 +1,24 @@
+name: d_serializer
+description: "Dart serialization library with invisible code generation"
+version: 1.0.0
+repository: https://github.com/your-username/d_serializer
+topics:
+  - serialization
+  - json
+  - codegen
+  - d_serializer
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  meta: ^1.12.0
+
+dev_dependencies:
+  build_runner: ^2.4.0
+  d_serializer_builder: ^1.0.0
+  test: ^1.24.0
+
+dependency_overrides:
+  d_serializer_builder:
+    path: ../d_serializer_builder
