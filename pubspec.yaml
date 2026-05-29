@@ -6,7 +6,6 @@ topics:
   - serialization
   - json
   - codegen
-  - d_serializer
 
 environment:
   sdk: ^3.11.5
