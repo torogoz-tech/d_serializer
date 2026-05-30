@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-05-30
+
+### Added
+- New field formatter annotation `@Format(...)`:
+  - `trim`, `uppercase`, `lowercase`
+  - `date('yyyy-MM-dd')`, `date('iso8601')`
+  - `custom('X')` with `XFormatToJson` / `XFormatFromJson`
+- Date formatting/parsing helpers:
+  - `Serializer.formatDate(...)`
+  - `Serializer.parseDate(...)`
+- Formatter tests for supported patterns and error paths.
+
+### Changed
+- README expanded with formatter matrix, pipeline order, build-time validation rules, and custom formatter contract.
+
 ## [1.0.2] - 2026-05-29
 
 ### Added
