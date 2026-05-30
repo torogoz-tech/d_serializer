@@ -139,6 +139,35 @@ Define top-level functions visible in the same model library scope:
 - `XFormatToJson(dynamic value)`
 - `XFormatFromJson(dynamic value)`
 
+## Complete Structured Example
+
+A production-like sample is included in this package:
+
+- `lib/example/models/user_profile.dart`
+- `lib/example/models/address.dart`
+- `lib/example/models/geo.dart`
+- `lib/example/models/user_status.dart`
+- `lib/example/models/money.dart`
+- `lib/example/formatters/title_case_formatter.dart`
+- `lib/example/formatters/money_converter.dart`
+- `example/example.dart`
+
+This sample demonstrates:
+
+- nested models
+- enum fallback with `unknownEnumValue`
+- `List<T>`, `Set<T>`, and `Map<String, T>`
+- `@JsonKey(requiredKey, defaultValue, ignore, converter)`
+- `@Format.trim()` and `@Format.custom('TitleCase')`
+- `@Serializable(strict, naming, typeField, discriminator)`
+
+Run the sample:
+
+```bash
+dart run build_runner build
+dart run example/example.dart
+```
+
 ## Advanced Examples
 
 ### Custom converter (`@JsonKey(converter: 'Money')`)

@@ -1,6 +1,6 @@
 name: d_serializer
 description: "Static JSON serializer with annotation-based generation for Dart"
-version: 1.1.1
+version: 1.1.2
 repository: https://github.com/torogoz-tech/d_serializer
 homepage: https://github.com/torogoz-tech/d_serializer
 topics:
@@ -16,5 +16,5 @@ dependencies:
 
 dev_dependencies:
   build_runner: ^2.10.3
-  d_serializer_builder: ^1.1.0
+  d_serializer_builder: ^1.1.1
   test: ^1.24.0

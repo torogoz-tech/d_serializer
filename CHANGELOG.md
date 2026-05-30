@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.2] - 2026-05-30
+
+### Added
+- New complete example with semantic project structure under `lib/example/`.
+- End-to-end example coverage for:
+  - nested models
+  - lists, sets, and maps
+  - enum fallback (`unknownEnumValue`)
+  - `@JsonKey(requiredKey/defaultValue/ignore/converter)`
+  - `@Format.trim()` + `@Format.custom('TitleCase')`
+  - `@Serializable(strict/naming/typeField/discriminator)`
+
+### Changed
+- `example/example.dart` now demonstrates a realistic model graph and production-like usage.
+- Analyzer configuration now excludes generated files (`**/*.g.dart`) from warnings.
+
 ## [1.1.1] - 2026-05-30
 
 ### Fixed
