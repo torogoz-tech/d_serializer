@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2026-05-30
+
+### Fixed
+- Example flow now uses generated `initializeDSerializer()` instead of per-model manual registration.
+- Packaging configuration cleaned up after local release validation (removed temporary dependency overrides).
+
+### Changed
+- Release workflow documentation hardened with a pre-publish checklist.
+
 ## [1.1.0] - 2026-05-30
 
 ### Added

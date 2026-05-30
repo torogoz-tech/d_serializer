@@ -1,38 +1,24 @@
+import 'package:d_serializer/d_serializer_registry.g.dart';
+import 'package:d_serializer/example_user.dart';
 import 'package:d_serializer/d_serializer.dart';
 
-part 'example.g.dart';
-
-enum Status { active, inactive, pending }
-
-@Serializable()
-class User {
-  final String name;
-  final int age;
-  final Status status;
-  final DateTime createdAt;
-
-  User({
-    required this.name,
-    required this.age,
-    required this.status,
-    required this.createdAt,
-  });
-}
-
 void main() {
-  // En archivos fuera de lib/, usa el registro generado del propio modelo.
-  registerUserSerializer();
+  initializeDSerializer();
 
-  final User user = User(
+  final ExampleUser user = ExampleUser(
     name: 'John',
     age: 30,
-    status: Status.active,
+    status: ExampleStatus.active,
     createdAt: DateTime.parse('2026-05-29T10:00:00Z'),
   );
 
-  final String json = Serializer.toJson<User>(user);
-  final User restored = Serializer.fromJson<User>(json);
+  final String json = Serializer.toJson<ExampleUser>(user);
+  final ExampleUser restored = Serializer.fromJson<ExampleUser>(json);
 
   print(json);
-  print('${restored.name} - ${restored.status.name} - ${restored.createdAt.toIso8601String()}');
+  print(
+    '${restored.name} - '
+    '${restored.status.name} - '
+    '${restored.createdAt.toIso8601String()}',
+  );
 }
