@@ -43,6 +43,47 @@ class Serializer {
     throw ArgumentError('Unsupported JSON payload for type $T');
   }
 
+  /// Formats a [DateTime] with a supported [pattern].
+  static String formatDate(DateTime value, String pattern) {
+    if (pattern == 'yyyy-MM-dd') {
+      final String year = value.year.toString().padLeft(4, '0');
+      final String month = value.month.toString().padLeft(2, '0');
+      final String day = value.day.toString().padLeft(2, '0');
+      return '$year-$month-$day';
+    }
+
+    if (pattern == 'iso8601') {
+      return value.toIso8601String();
+    }
+
+    throw UnsupportedError('Unsupported date format pattern: $pattern');
+  }
+
+  /// Parses a [DateTime] using a supported [pattern].
+  static DateTime parseDate(String value, String pattern) {
+    if (pattern == 'yyyy-MM-dd') {
+      final RegExp regExp = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$');
+      final RegExpMatch? match = regExp.firstMatch(value);
+      if (match == null) {
+        throw FormatException(
+          'Invalid date value for pattern yyyy-MM-dd',
+          value,
+        );
+      }
+
+      final int year = int.parse(match.group(1)!);
+      final int month = int.parse(match.group(2)!);
+      final int day = int.parse(match.group(3)!);
+      return DateTime(year, month, day);
+    }
+
+    if (pattern == 'iso8601') {
+      return DateTime.parse(value);
+    }
+
+    throw UnsupportedError('Unsupported date format pattern: $pattern');
+  }
+
   static T _decodeMap<T>(Map<String, dynamic> json) {
     final JsonFactory<dynamic>? factory = _factories[T];
     if (factory == null) {
