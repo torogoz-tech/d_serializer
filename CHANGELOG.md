@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.4] - 2026-06-01
+
+### Fixed
+- Included `lib/example/example_models.g.dart` in the published package.
+- Fixed pub.dev analyzer failure (`URI_HAS_NOT_BEEN_GENERATED`) for `example_models.g.dart`.
+- Restored platform/support and downgrade-analysis checks by shipping required generated source.
+
 ## [1.1.3] - 2026-06-01
 
 ### Added
