@@ -1,2 +1,2 @@
-/// Annotation exports used by generated serializers.
+// Annotation exports used by generated serializers.
 export 'serializable.dart';

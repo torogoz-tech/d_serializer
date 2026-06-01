@@ -77,7 +77,10 @@ class Format {
   /// Optional formatter pattern, for example date patterns.
   final String? pattern;
 
-  const Format._(this.kind, {this.pattern});
+  /// Optional formatter type for typed custom formatters.
+  final Type? formatterType;
+
+  const Format._(this.kind, {this.pattern, this.formatterType});
 
   /// Trims leading and trailing whitespace.
   const Format.trim() : this._('trim');
@@ -94,4 +97,9 @@ class Format {
   /// Uses custom formatter functions:
   /// `XFormatToJson` and `XFormatFromJson`.
   const Format.custom(String name) : this._('custom', pattern: name);
+
+  /// Uses typed custom formatter functions:
+  /// `TypeNameFormatToJson` and `TypeNameFormatFromJson`.
+  const Format.customWith(Type formatterType)
+      : this._('customWith', formatterType: formatterType);
 }

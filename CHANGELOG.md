@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.3] - 2026-06-01
+
+### Added
+- Typed formatter annotation support: `@Format.customWith(TypeName)`.
+- Consolidated complete example model set in `lib/example/example_models.dart`.
+- Pub.dev-facing example (`example/example.dart`) now documents model structure, initialization flow, and usage in one place.
+
+### Fixed
+- `@Format.date(...)` serialization/deserialization pipeline for generated code.
+- Reduced unnecessary casts in generated formatter expressions.
+- Export library headers adjusted to avoid dangling doc-comment analysis warnings.
+
+### Changed
+- Formatter docs updated to include typed custom formatters.
+- Example updated to use `@Format.customWith(TitleCase)`.
+
 ## [1.1.2] - 2026-05-30
 
 ### Added

@@ -120,6 +120,7 @@ Field formatter pipeline (applied in both `toJson` and `fromJson`).
 | `@Format.date('yyyy-MM-dd')` | `DateTime`, `DateTime?` | Uses built-in formatter/parser |
 | `@Format.date('iso8601')` | `DateTime`, `DateTime?` | Uses `toIso8601String`/`DateTime.parse` |
 | `@Format.custom('X')` | Any | Uses custom formatter functions |
+| `@Format.customWith(TypeName)` | Any | Typed custom formatter, resolves by type name |
 
 Pipeline order:
 
@@ -131,8 +132,9 @@ Build-time validation:
 - String formatters on non-string fields fail generation.
 - Date formatter on non-date fields fails generation.
 - Empty `@Format.custom('')` fails generation.
+- `@Format.customWith(TypeName)` requires a valid type literal.
 
-`@Format.custom('X')` contract:
+`@Format.custom('X')` and `@Format.customWith(TypeName)` contract:
 
 Define top-level functions visible in the same model library scope:
 
@@ -141,16 +143,7 @@ Define top-level functions visible in the same model library scope:
 
 ## Complete Structured Example
 
-A production-like sample is included in this package:
-
-- `lib/example/models/user_profile.dart`
-- `lib/example/models/address.dart`
-- `lib/example/models/geo.dart`
-- `lib/example/models/user_status.dart`
-- `lib/example/models/money.dart`
-- `lib/example/formatters/title_case_formatter.dart`
-- `lib/example/formatters/money_converter.dart`
-- `example/example.dart`
+A production-like sample is included in `example/example.dart` (self-contained).
 
 This sample demonstrates:
 
@@ -158,7 +151,7 @@ This sample demonstrates:
 - enum fallback with `unknownEnumValue`
 - `List<T>`, `Set<T>`, and `Map<String, T>`
 - `@JsonKey(requiredKey, defaultValue, ignore, converter)`
-- `@Format.trim()` and `@Format.custom('TitleCase')`
+- `@Format.trim()` and `@Format.customWith(TitleCase)`
 - `@Serializable(strict, naming, typeField, discriminator)`
 
 Run the sample:
@@ -190,7 +183,7 @@ class Invoice {
 }
 ```
 
-### Custom formatter (`@Format.custom('TitleCase')`)
+### Typed custom formatter (`@Format.customWith(TitleCase)`)
 
 ```dart
 String TitleCaseFormatToJson(dynamic value) {
@@ -203,10 +196,14 @@ String TitleCaseFormatFromJson(dynamic value) {
   return TitleCaseFormatToJson(value);
 }
 
+class TitleCase {
+  const TitleCase._();
+}
+
 @Serializable()
 class Post {
   @JsonKey(requiredKey: true)
-  @Format.custom('TitleCase')
+  @Format.customWith(TitleCase)
   final String title;
 
   Post({required this.title});
