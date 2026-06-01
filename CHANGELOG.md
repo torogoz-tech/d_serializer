@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.5] - 2026-06-01
+
+### Fixed
+- Regenerated `example_models.g.dart` with `d_serializer_builder 1.1.4` to remove `unnecessary_cast` warnings in pub.dev static analysis.
+
 ## [1.1.4] - 2026-06-01
 
 ### Fixed

@@ -8,6 +8,7 @@ part of 'example_models.dart';
 // **************************************************************************
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: non_constant_identifier_names
 
 Geo GeoFromJson(Map<String, dynamic> json) {
   return Geo(
@@ -31,6 +32,7 @@ extension GeoSerializer on Geo {
 }
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: non_constant_identifier_names
 
 Address AddressFromJson(Map<String, dynamic> json) {
   if (!json.containsKey('street') || json['street'] == null) {
@@ -68,6 +70,7 @@ extension AddressSerializer on Address {
 }
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: non_constant_identifier_names
 
 UserProfile UserProfileFromJson(Map<String, dynamic> json) {
   if (json['kind'] != 'user_profile') {
@@ -104,20 +107,14 @@ UserProfile UserProfileFromJson(Map<String, dynamic> json) {
   }
   return UserProfile(
     id: (json['id'] as num).toInt(),
-    fullName: ((json['fullName'] as String) as String).trim(),
+    fullName: TitleCaseFormatFromJson((json['fullName'] as String).trim()),
     active: json['active'] == null ? true : json['active'] as bool,
     status: UserStatus.values.firstWhere(
       (e) => e.name == (json['status'] as String),
       orElse: () => UserStatus.values.byName('unknown'),
     ),
-    birthDate: Serializer.parseDate(
-      ((DateTime.parse(json['birthDate'] as String)) as String),
-      'yyyy-MM-dd',
-    ),
-    createdAt: Serializer.parseDate(
-      ((DateTime.parse(json['createdAt'] as String)) as String),
-      'iso8601',
-    ),
+    birthDate: Serializer.parseDate((json['birthDate']), 'yyyy-MM-dd'),
+    createdAt: Serializer.parseDate((json['createdAt']), 'iso8601'),
     tags: (json['tags'] as List).map((e) => e as String).toList(),
     scores: ((json['scores'] as List).map((e) => (e as num).toInt())).toSet(),
     metadata: (json['metadata'] as Map).map(
@@ -144,17 +141,11 @@ extension UserProfileSerializer on UserProfile {
     return <String, dynamic>{
       'kind': 'user_profile',
       'id': id,
-      'fullName': ((fullName) as String).trim(),
+      'fullName': TitleCaseFormatToJson((fullName).trim()),
       'active': active,
       'status': status.name,
-      'birthDate': Serializer.formatDate(
-        ((birthDate.toIso8601String()) as DateTime),
-        'yyyy-MM-dd',
-      ),
-      'createdAt': Serializer.formatDate(
-        ((createdAt.toIso8601String()) as DateTime),
-        'iso8601',
-      ),
+      'birthDate': Serializer.formatDate((birthDate), 'yyyy-MM-dd'),
+      'createdAt': Serializer.formatDate((createdAt), 'iso8601'),
       'tags': (tags as List).map((e) => e).toList(),
       'scores': (scores as Set).map((e) => e).toList(),
       'metadata': (metadata as Map).map((k, v) => MapEntry(k.toString(), v)),
