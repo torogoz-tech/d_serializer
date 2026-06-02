@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-06-03
+
+### Added
+
+- **UnknownKeyPolicy enum** with three options:
+  - `UnknownKeyPolicy.strict` - Throws error on unknown JSON keys
+  - `UnknownKeyPolicy.ignore` - Silently ignores unknown keys (default)
+  - `UnknownKeyPolicy.capture` - Captures unknown keys in `extra` field
+- New `@Serializable(unknownKeyPolicy: ...)` parameter
+- **Backward compatibility** with deprecated `strict: true` parameter
+- **Comprehensive documentation** with:
+  - Complete API reference
+  - Migration guide from json_serializable
+  - Advanced examples for all features
+  - Troubleshooting section
+  - Integration examples (Flutter, HTTP, Dio)
+
+### Changed
+
+- `strict` boolean parameter is now deprecated in favor of `unknownKeyPolicy`
+- Default unknown key behavior changed from `strict` to `ignore`
+- README expanded with detailed examples and table of contents
+
+### Documentation
+
+- New table of contents for easy navigation
+- Added UnknownKeyPolicy section with migration guide
+- Added advanced topics section with build workflow and supported types
+- Added migration guide for common use cases
+- Added integration examples with Flutter, HTTP, and Dio
+
 ## [1.2.0] - 2026-06-01
 
 ### Added
