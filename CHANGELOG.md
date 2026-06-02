@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-06-01
+
+### Added
+- Real polymorphic union support with discriminator resolution.
+- New `@SerializableUnion(typeField: ...)` annotation for sealed/union roots.
+- Runtime union registration API: `Serializer.registerUnion<T>(...)`.
+- Runtime decoded-value API: `Serializer.fromDynamic<T>(...)`.
+- Runtime encoded-value API: `Serializer.encodeDynamic(...)`.
+- New union test coverage (`test/union_test.dart`).
+
+### Changed
+- Generator now auto-registers union subtypes for annotated supertypes.
+- Generator now writes union discriminator field automatically for subtype payloads.
+- Object field generation now uses runtime dynamic encode/decode for polymorphic fields.
+- Example now includes `PaymentMethod` union with `CardPayment`/`PaypalPayment`.
+
 ## [1.1.5] - 2026-06-01
 
 ### Fixed

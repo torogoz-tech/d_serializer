@@ -161,6 +161,29 @@ dart run build_runner build
 dart run example/example.dart
 ```
 
+
+### Union / sealed polymorphism
+
+```dart
+@SerializableUnion(typeField: 'type')
+sealed class PaymentMethod {}
+
+@Serializable(discriminator: 'card')
+class CardPayment extends PaymentMethod {
+  final String last4;
+  CardPayment({required this.last4});
+}
+
+@Serializable(discriminator: 'paypal')
+class PaypalPayment extends PaymentMethod {
+  final String email;
+  PaypalPayment({required this.email});
+}
+```
+
+When generated serializers are registered, `Serializer.fromJson<PaymentMethod>(json)`
+resolves the subtype using `typeField` + `discriminator`.
+
 ## Advanced Examples
 
 ### Custom converter (`@JsonKey(converter: 'Money')`)

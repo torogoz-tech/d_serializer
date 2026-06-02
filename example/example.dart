@@ -61,6 +61,7 @@ import 'package:d_serializer/example/example_models.dart';
 //   final Address address;
 //   @JsonKey(converter: 'Money')
 //   final Money balance;
+//   final PaymentMethod paymentMethod;
 //   @JsonKey(ignore: true)
 //   final String internalToken;
 //   const UserProfile({...});
@@ -90,6 +91,10 @@ void main() {
       geo: Geo(lat: 13.6929, lng: -89.2182),
     ),
     balance: const Money(259900),
+    paymentMethod: const CardPayment(
+      last4: '4242',
+      brand: 'visa',
+    ),
     internalToken: 'secret-not-serialized',
   );
 
@@ -100,4 +105,5 @@ void main() {
   print('Restored => ${restored.fullName} | ${restored.status.name}');
   print('Birth => ${restored.birthDate.toIso8601String()}');
   print('Balance(cents) => ${restored.balance.cents}');
+  print('Payment => ${restored.paymentMethod.runtimeType}');
 }
