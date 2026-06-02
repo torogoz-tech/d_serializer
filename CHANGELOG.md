@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] - 2026-06-02
+
+### Added
+- **Polymorphic unions**: New `@SerializableUnion` annotation for discriminated union serialization.
+  - Use with `sealed class` to define union root types
+  - Subtypes use `@Serializable(discriminator: 'value')` to register themselves
+  - Automatic type resolution during deserialization based on discriminator field
+  - Configurable `typeField` parameter (defaults to `'type'`)
+- **New Serializer APIs**:
+  - `Serializer.registerUnion<T>(...)` - Register union subtype factories
+  - `Serializer.fromDynamic<T>(decoded)` - Deserialize decoded JSON values
+  - `Serializer.encodeDynamic(value)` - Encode values to JSON-compatible structures
+
 ## [1.1.5] - 2026-06-01
 
 ### Fixed

@@ -26,6 +26,38 @@ class Serializable {
 
 const serializable = Serializable();
 
+/// Marks a base type as a polymorphic union root.
+///
+/// Use with `sealed class` to enable discriminated union serialization.
+///
+/// Example:
+/// ```dart
+/// @SerializableUnion(typeField: 'type')
+/// sealed class PaymentMethod {}
+///
+/// @Serializable(discriminator: 'card')
+/// class CardPayment extends PaymentMethod {
+///   final String last4;
+///   CardPayment({required this.last4});
+/// }
+///
+/// @Serializable(discriminator: 'paypal')
+/// class PaypalPayment extends PaymentMethod {
+///   final String email;
+///   PaypalPayment({required this.email});
+/// }
+/// ```
+///
+/// When generated, `Serializer.fromJson<PaymentMethod>(json)` will automatically
+/// resolve the correct subtype based on the discriminator value.
+class SerializableUnion {
+  /// JSON field name that stores the discriminator value.
+  /// Defaults to 'type' if not specified.
+  final String typeField;
+
+  const SerializableUnion({this.typeField = 'type'});
+}
+
 /// Naming policy applied to generated JSON keys.
 enum JsonNaming {
   /// Keep field names as-is.
