@@ -1,3 +1,24 @@
+/// Policy for handling unknown keys during deserialization.
+enum UnknownKeyPolicy {
+  /// Throws an error if unknown keys are present.
+  strict,
+
+  /// Ignores unknown keys silently.
+  ignore,
+
+  /// Captures unknown keys in an `extra` field.
+  capture,
+}
+
+/// Naming policy applied to generated JSON keys.
+enum JsonNaming {
+  /// Keep field names as-is.
+  none,
+
+  /// Convert field names from `camelCase` to `snake_case`.
+  snakeCase,
+}
+
 /// Marks a class as serializable by `d_serializer_builder`.
 class Serializable {
   /// Optional alias used as discriminator fallback.
@@ -9,8 +30,11 @@ class Serializable {
   /// JSON field name used to store/read the discriminator.
   final String? typeField;
 
-  /// Enables strict deserialization for unknown keys.
-  final bool strict;
+  /// Policy for handling unknown keys during deserialization.
+  /// - `strict`: throws error on unknown keys (legacy behavior when strict: true)
+  /// - `ignore`: ignores unknown keys
+  /// - `capture`: stores unknown keys in the `extra` field
+  final UnknownKeyPolicy unknownKeyPolicy;
 
   /// Global naming strategy for fields in this class.
   final JsonNaming naming;
@@ -19,20 +43,43 @@ class Serializable {
     this.rename,
     this.discriminator,
     this.typeField,
-    this.strict = false,
+    this.unknownKeyPolicy = UnknownKeyPolicy.ignore,
     this.naming = JsonNaming.none,
   });
 }
 
 const serializable = Serializable();
 
-/// Naming policy applied to generated JSON keys.
-enum JsonNaming {
-  /// Keep field names as-is.
-  none,
+/// Marks a base type as a polymorphic union root.
+///
+/// Use with `sealed class` to enable discriminated union serialization.
+///
+/// Example:
+/// ```dart
+/// @SerializableUnion(typeField: 'type')
+/// sealed class PaymentMethod {}
+///
+/// @Serializable(discriminator: 'card')
+/// class CardPayment extends PaymentMethod {
+///   final String last4;
+///   CardPayment({required this.last4});
+/// }
+///
+/// @Serializable(discriminator: 'paypal')
+/// class PaypalPayment extends PaymentMethod {
+///   final String email;
+///   PaypalPayment({required this.email});
+/// }
+/// ```
+///
+/// When generated, `Serializer.fromJson<PaymentMethod>(json)` will automatically
+/// resolve the correct subtype based on the discriminator value.
+class SerializableUnion {
+  /// JSON field name that stores the discriminator value.
+  /// Defaults to 'type' if not specified.
+  final String typeField;
 
-  /// Convert field names from `camelCase` to `snake_case`.
-  snakeCase,
+  const SerializableUnion({this.typeField = 'type'});
 }
 
 /// Field-level serialization customizations.

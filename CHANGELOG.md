@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-06-03
+
+### Added
+
+- **UnknownKeyPolicy enum** with three options:
+  - `UnknownKeyPolicy.strict` - Throws error on unknown JSON keys
+  - `UnknownKeyPolicy.ignore` - Silently ignores unknown keys (default)
+  - `UnknownKeyPolicy.capture` - Captures unknown keys in `extra` field
+- New `@Serializable(unknownKeyPolicy: ...)` parameter
+- **Polymorphic unions**: New `@SerializableUnion` annotation for discriminated union serialization.
+  - Use with `sealed class` to define union root types
+  - Subtypes use `@Serializable(discriminator: 'value')` to register themselves
+  - Automatic type resolution during deserialization based on discriminator field
+  - Configurable `typeField` parameter (defaults to `'type'`)
+- **New Serializer APIs**:
+  - `Serializer.registerUnion<T>(...)` - Register union subtype factories
+  - `Serializer.fromDynamic<T>(decoded)` - Deserialize decoded JSON values
+  - `Serializer.encodeDynamic(value)` - Encode values to JSON-compatible structures
+- **Backward compatibility** with deprecated `strict: true` parameter
+- **Comprehensive documentation** with:
+  - Complete API reference
+  - Migration guide from json_serializable
+  - Polymorphic union examples with JSON payloads
+  - Advanced examples for all features
+  - Troubleshooting section
+  - Integration examples (Flutter, HTTP, Dio)
+
+### Changed
+
+- `strict` boolean parameter is now deprecated in favor of `unknownKeyPolicy`
+- Default unknown key behavior changed from `strict` to `ignore`
+- README expanded with detailed examples and table of contents
+- Generator now auto-registers union subtypes for annotated supertypes
+- Generator now writes union discriminator field automatically for subtype payloads
+
 ## [1.1.5] - 2026-06-01
 
 ### Fixed
