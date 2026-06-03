@@ -435,6 +435,361 @@ Both work identically. The new API provides more options and better type safety.
 
 ---
 
+## Polymorphic Unions
+
+Support for discriminated union serialization using sealed classes with `@SerializableUnion`.
+
+### Overview
+
+Polymorphic unions allow you to serialize/deserialize hierarchies of related types using a discriminator field. The framework automatically resolves the correct subtype during deserialization.
+
+### Key Concepts
+
+- **Root type**: A `sealed class` marked with `@SerializableUnion`
+- **Subtypes**: Concrete classes marked with `@Serializable(discriminator: 'value')`
+- **Discriminator field**: JSON field that stores the type indicator (defaults to `'type'`)
+
+### Usage
+
+#### 1. Define the union root
+
+```dart
+import 'package:d_serializer/d_serializer.dart';
+
+part 'models.g.dart';
+
+@SerializableUnion(typeField: 'kind')
+sealed class PaymentMethod {
+  const PaymentMethod();
+}
+```
+
+#### 2. Define concrete subtypes
+
+```dart
+@Serializable(discriminator: 'card')
+class CardPayment extends PaymentMethod {
+  final String last4;
+  final String brand;
+
+  const CardPayment({
+    required this.last4,
+    required this.brand,
+  });
+}
+
+@Serializable(discriminator: 'paypal')
+class PayPalPayment extends PaymentMethod {
+  final String email;
+
+  const PayPalPayment({required this.email});
+}
+```
+
+#### 3. Generate code
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+The generated code will:
+- Include the discriminator field in each subtype's JSON
+- Register union factories for automatic type resolution
+
+#### 4. Initialize and use
+
+```dart
+import 'd_serializer_registry.g.dart';
+
+void main() {
+  initializeDSerializer();
+
+  // Serialize any PaymentMethod subtype
+  const payment = CardPayment(last4: '1234', brand: 'Visa');
+  final json = Serializer.toJson<PaymentMethod>(payment);
+  // Output: {'kind': 'card', 'last4': '1234', 'brand': 'Visa'}
+
+  // Deserialize - automatically resolves correct subtype
+  final restored = Serializer.fromJson<PaymentMethod>(json);
+  // restored is a CardPayment instance
+}
+```
+
+### API
+
+#### `@SerializableUnion`
+
+Marks a sealed class as a polymorphic union root.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `typeField` | `String` | `'type'` | JSON field name for the discriminator |
+
+#### `@Serializable` (union-specific)
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `discriminator` | `String` | Unique value for this subtype in the discriminator field |
+
+### Example JSON Payloads
+
+**Card Payment:**
+```json
+{
+  "kind": "card",
+  "last4": "4242",
+  "brand": "Visa"
+}
+```
+
+**PayPal Payment:**
+```json
+{
+  "kind": "paypal",
+  "email": "user@example.com"
+}
+```
+
+### Design Patterns
+
+#### Event system
+
+```dart
+@SerializableUnion(typeField: 'event')
+sealed class AppEvent {
+  const AppEvent();
+}
+
+@Serializable(discriminator: 'click')
+class ClickEvent extends AppEvent {
+  final String elementId;
+  const ClickEvent({required this.elementId});
+}
+
+@Serializable(discriminator: 'scroll')
+class ScrollEvent extends AppEvent {
+  final int pixels;
+  const ScrollEvent({required this.pixels});
+}
+
+@Serializable(discriminator: 'error')
+class ErrorEvent extends AppEvent {
+  final String message;
+  const ErrorEvent({required this.message});
+}
+```
+
+#### API response types
+
+```dart
+@SerializableUnion(typeField: 'type')
+sealed class ApiResponse {
+  const ApiResponse();
+}
+
+@Serializable(discriminator: 'success')
+class SuccessResponse extends ApiResponse {
+  final dynamic data;
+  const SuccessResponse({required this.data});
+}
+
+@Serializable(discriminator: 'error')
+class ErrorResponse extends ApiResponse {
+  final String code;
+  final String message;
+  const ErrorResponse({required this.code, required this.message});
+}
+```
+
+### Best practices
+
+1. **Use meaningful discriminator values**: Choose values that clearly identify each subtype
+2. **Keep discriminators stable**: Once published, avoid changing discriminator values
+3. **Use sealed classes**: Dart's sealed modifier ensures exhaustive pattern matching
+4. **Document discriminator mappings**: Keep a reference of which discriminator maps to which type
+
+### Limitations
+
+- All subtypes must be annotated with `@Serializable` and have a unique `discriminator`
+- The union root must be a `sealed class` (recommended) or a regular class
+- Type resolution happens at runtime via factory registration
+
+---
+
+Support for discriminated union serialization using sealed classes with `@SerializableUnion`.
+
+### Overview
+
+Polymorphic unions allow you to serialize/deserialize hierarchies of related types using a discriminator field. The framework automatically resolves the correct subtype during deserialization.
+
+### Key Concepts
+
+- **Root type**: A `sealed class` marked with `@SerializableUnion`
+- **Subtypes**: Concrete classes marked with `@Serializable(discriminator: 'value')`
+- **Discriminator field**: JSON field that stores the type indicator (defaults to `'type'`)
+
+### Usage
+
+#### 1. Define the union root
+
+```dart
+import 'package:d_serializer/d_serializer.dart';
+
+part 'models.g.dart';
+
+@SerializableUnion(typeField: 'kind')
+sealed class PaymentMethod {
+  const PaymentMethod();
+}
+```
+
+#### 2. Define concrete subtypes
+
+```dart
+@Serializable(discriminator: 'card')
+class CardPayment extends PaymentMethod {
+  final String last4;
+  final String brand;
+
+  const CardPayment({
+    required this.last4,
+    required this.brand,
+  });
+}
+
+@Serializable(discriminator: 'paypal')
+class PayPalPayment extends PaymentMethod {
+  final String email;
+
+  const PayPalPayment({required this.email});
+}
+```
+
+#### 3. Generate code
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+The generated code will:
+- Include the discriminator field in each subtype's JSON
+- Register union factories for automatic type resolution
+
+#### 4. Initialize and use
+
+```dart
+import 'd_serializer_registry.g.dart';
+
+void main() {
+  initializeDSerializer();
+
+  // Serialize any PaymentMethod subtype
+  const payment = CardPayment(last4: '1234', brand: 'Visa');
+  final json = Serializer.toJson<PaymentMethod>(payment);
+  // Output: {'kind': 'card', 'last4': '1234', 'brand': 'Visa'}
+
+  // Deserialize - automatically resolves correct subtype
+  final restored = Serializer.fromJson<PaymentMethod>(json);
+  // restored is a CardPayment instance
+}
+```
+
+### API
+
+#### `@SerializableUnion`
+
+Marks a sealed class as a polymorphic union root.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `typeField` | `String` | `'type'` | JSON field name for the discriminator |
+
+#### `@Serializable` (union-specific)
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `discriminator` | `String` | Unique value for this subtype in the discriminator field |
+
+### Design Patterns
+
+#### Event system
+
+```dart
+@SerializableUnion(typeField: 'event')
+sealed class AppEvent {
+  const AppEvent();
+}
+
+@Serializable(discriminator: 'click')
+class ClickEvent extends AppEvent {
+  final String elementId;
+  const ClickEvent({required this.elementId});
+}
+
+@Serializable(discriminator: 'scroll')
+class ScrollEvent extends AppEvent {
+  final int pixels;
+  const ScrollEvent({required this.pixels});
+}
+
+@Serializable(discriminator: 'error')
+class ErrorEvent extends AppEvent {
+  final String message;
+  const ErrorEvent({required this.message});
+}
+```
+
+#### API response types
+
+```dart
+@SerializableUnion(typeField: 'type')
+sealed class ApiResponse {
+  const ApiResponse();
+}
+
+@Serializable(discriminator: 'success')
+class SuccessResponse extends ApiResponse {
+  final dynamic data;
+  const SuccessResponse({required this.data});
+}
+
+@Serializable(discriminator: 'error')
+class ErrorResponse extends ApiResponse {
+  final String code;
+  final String message;
+  const ErrorResponse({required this.code, required this.message});
+}
+```
+
+### Extending existing unions
+
+Subclasses can add additional subtypes by simply annotating new classes with the appropriate discriminator:
+
+```dart
+@Serializable(discriminator: 'crypto')
+class CryptoPayment extends PaymentMethod {
+  final String walletAddress;
+  const CryptoPayment({required this.walletAddress});
+}
+```
+
+### Best practices
+
+1. **Use meaningful discriminator values**: Choose values that clearly identify each subtype
+2. **Keep discriminators stable**: Once published, avoid changing discriminator values
+3. **Use sealed classes**: Dart's sealed modifier ensures exhaustive pattern matching
+4. **Document discriminator mappings**: Keep a reference of which discriminator maps to which type
+
+### Limitations
+
+- All subtypes must be annotated with `@Serializable` and have a unique `discriminator`
+- The union root must be a `sealed class` (recommended) or a regular class
+- Type resolution happens at runtime via factory registration
+
+---
+
+## Supported Types
+
 ## Complete Examples
 
 ### Basic Model

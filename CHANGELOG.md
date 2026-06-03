@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.3.0] - 2026-06-03
+## [1.2.0] - 2026-06-03
 
 ### Added
 
@@ -11,10 +11,20 @@ All notable changes to this project will be documented in this file.
   - `UnknownKeyPolicy.ignore` - Silently ignores unknown keys (default)
   - `UnknownKeyPolicy.capture` - Captures unknown keys in `extra` field
 - New `@Serializable(unknownKeyPolicy: ...)` parameter
+- **Polymorphic unions**: New `@SerializableUnion` annotation for discriminated union serialization.
+  - Use with `sealed class` to define union root types
+  - Subtypes use `@Serializable(discriminator: 'value')` to register themselves
+  - Automatic type resolution during deserialization based on discriminator field
+  - Configurable `typeField` parameter (defaults to `'type'`)
+- **New Serializer APIs**:
+  - `Serializer.registerUnion<T>(...)` - Register union subtype factories
+  - `Serializer.fromDynamic<T>(decoded)` - Deserialize decoded JSON values
+  - `Serializer.encodeDynamic(value)` - Encode values to JSON-compatible structures
 - **Backward compatibility** with deprecated `strict: true` parameter
 - **Comprehensive documentation** with:
   - Complete API reference
   - Migration guide from json_serializable
+  - Polymorphic union examples with JSON payloads
   - Advanced examples for all features
   - Troubleshooting section
   - Integration examples (Flutter, HTTP, Dio)
@@ -24,30 +34,8 @@ All notable changes to this project will be documented in this file.
 - `strict` boolean parameter is now deprecated in favor of `unknownKeyPolicy`
 - Default unknown key behavior changed from `strict` to `ignore`
 - README expanded with detailed examples and table of contents
-
-### Documentation
-
-- New table of contents for easy navigation
-- Added UnknownKeyPolicy section with migration guide
-- Added advanced topics section with build workflow and supported types
-- Added migration guide for common use cases
-- Added integration examples with Flutter, HTTP, and Dio
-
-## [1.2.0] - 2026-06-01
-
-### Added
-- Real polymorphic union support with discriminator resolution.
-- New `@SerializableUnion(typeField: ...)` annotation for sealed/union roots.
-- Runtime union registration API: `Serializer.registerUnion<T>(...)`.
-- Runtime decoded-value API: `Serializer.fromDynamic<T>(...)`.
-- Runtime encoded-value API: `Serializer.encodeDynamic(...)`.
-- New union test coverage (`test/union_test.dart`).
-
-### Changed
-- Generator now auto-registers union subtypes for annotated supertypes.
-- Generator now writes union discriminator field automatically for subtype payloads.
-- Object field generation now uses runtime dynamic encode/decode for polymorphic fields.
-- Example now includes `PaymentMethod` union with `CardPayment`/`PaypalPayment`.
+- Generator now auto-registers union subtypes for annotated supertypes
+- Generator now writes union discriminator field automatically for subtype payloads
 
 ## [1.1.5] - 2026-06-01
 

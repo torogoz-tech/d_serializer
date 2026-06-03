@@ -26,6 +26,15 @@ class Serializer {
   }
 
   /// Registers a union subtype factory under a discriminator value.
+  ///
+  /// Used by generated code for polymorphic unions:
+  /// ```dart
+  /// Serializer.registerUnion<PaymentMethod>(
+  ///   typeField: 'type',
+  ///   discriminator: 'card',
+  ///   fromJson: CardPaymentFromJson,
+  /// );
+  /// ```
   static void registerUnion<T>({
     required String typeField,
     required String discriminator,
@@ -58,6 +67,10 @@ class Serializer {
   }
 
   /// Deserializes a decoded JSON value into type [T].
+  ///
+  /// Works with:
+  /// - `Map<String, dynamic>` - delegates to registered factory or union resolution
+  /// - Primitives (`null`, `num`, `bool`, `String`) - returns as-is
   static T fromDynamic<T>(dynamic decoded) {
     if (decoded is Map<String, dynamic>) {
       return _decodeMap<T>(decoded);
@@ -71,6 +84,8 @@ class Serializer {
   }
 
   /// Encodes a runtime value to a JSON-compatible structure.
+  ///
+  /// Handles nested objects, collections, and registered types.
   static Object? encodeDynamic(Object? value) => _encodeValue(value);
 
   /// Formats a [DateTime] with a supported [pattern].
@@ -92,7 +107,7 @@ class Serializer {
   /// Parses a [DateTime] using a supported [pattern].
   static DateTime parseDate(String value, String pattern) {
     if (pattern == 'yyyy-MM-dd') {
-      final RegExp regExp = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$');
+      final RegExp regExp = RegExp(r'^(\\d{4})-(\\d{2})-(\\d{2})$');
       final RegExpMatch? match = regExp.firstMatch(value);
       if (match == null) {
         throw FormatException(
@@ -115,11 +130,7 @@ class Serializer {
   }
 
   static T _decodeMap<T>(Map<String, dynamic> json) {
-    final JsonFactory<dynamic>? factory = _factories[T];
-    if (factory != null) {
-      return factory(json) as T;
-    }
-
+    // First check if this type has union registrations
     final Map<String, JsonFactory<dynamic>>? unionFactories = _unionFactories[T];
     if (unionFactories != null) {
       final String typeField = _unionTypeFields[T] ?? 'type';
@@ -138,6 +149,12 @@ class Serializer {
       }
 
       return unionFactory(json) as T;
+    }
+
+    // Fall back to regular factory
+    final JsonFactory<dynamic>? factory = _factories[T];
+    if (factory != null) {
+      return factory(json) as T;
     }
 
     throw StateError(
