@@ -10,6 +10,81 @@ part of 'example_models.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: non_constant_identifier_names
 
+CardPayment CardPaymentFromJson(Map<String, dynamic> json) {
+  if (json['paymentType'] != 'card') {
+    throw ArgumentError(
+      'Invalid discriminator for CardPayment at paymentType: expected card',
+    );
+  }
+  return CardPayment(
+    last4: json['last4'] as String,
+    brand: json['brand'] as String,
+  );
+}
+
+Map<String, dynamic> CardPaymentToJson(CardPayment value) {
+  return value.toJson();
+}
+
+void registerCardPaymentSerializer() {
+  Serializer.register<CardPayment>(
+    fromJson: CardPaymentFromJson,
+    toJson: CardPaymentToJson,
+  );
+  Serializer.registerUnion<PaymentMethod>(
+    typeField: 'paymentType',
+    discriminator: 'card',
+    fromJson: (Map<String, dynamic> json) => CardPaymentFromJson(json),
+  );
+}
+
+extension CardPaymentSerializer on CardPayment {
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'paymentType': 'card',
+      'last4': last4,
+      'brand': brand,
+    };
+  }
+}
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: non_constant_identifier_names
+
+PaypalPayment PaypalPaymentFromJson(Map<String, dynamic> json) {
+  if (json['paymentType'] != 'paypal') {
+    throw ArgumentError(
+      'Invalid discriminator for PaypalPayment at paymentType: expected paypal',
+    );
+  }
+  return PaypalPayment(email: json['email'] as String);
+}
+
+Map<String, dynamic> PaypalPaymentToJson(PaypalPayment value) {
+  return value.toJson();
+}
+
+void registerPaypalPaymentSerializer() {
+  Serializer.register<PaypalPayment>(
+    fromJson: PaypalPaymentFromJson,
+    toJson: PaypalPaymentToJson,
+  );
+  Serializer.registerUnion<PaymentMethod>(
+    typeField: 'paymentType',
+    discriminator: 'paypal',
+    fromJson: (Map<String, dynamic> json) => PaypalPaymentFromJson(json),
+  );
+}
+
+extension PaypalPaymentSerializer on PaypalPayment {
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{'paymentType': 'paypal', 'email': email};
+  }
+}
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: non_constant_identifier_names
+
 Geo GeoFromJson(Map<String, dynamic> json) {
   return Geo(
     lat: (json['lat'] as num).toDouble(),
@@ -44,7 +119,7 @@ Address AddressFromJson(Map<String, dynamic> json) {
   return Address(
     street: json['street'] as String,
     city: json['city'] as String,
-    geo: GeoFromJson(json['geo'] as Map<String, dynamic>),
+    geo: Serializer.fromDynamic<Geo>(json['geo']),
   );
 }
 
@@ -64,7 +139,7 @@ extension AddressSerializer on Address {
     return <String, dynamic>{
       'street': street,
       'city': city,
-      'geo': geo.toJson(),
+      'geo': Serializer.encodeDynamic(geo),
     };
   }
 }
@@ -99,6 +174,7 @@ UserProfile UserProfileFromJson(Map<String, dynamic> json) {
     'metadata',
     'address',
     'balance',
+    'paymentMethod',
   };
   for (final String key in json.keys) {
     if (!_allowedKeys.contains(key)) {
@@ -120,8 +196,9 @@ UserProfile UserProfileFromJson(Map<String, dynamic> json) {
     metadata: (json['metadata'] as Map).map(
       (k, v) => MapEntry(k.toString(), v as String),
     ),
-    address: AddressFromJson(json['address'] as Map<String, dynamic>),
+    address: Serializer.fromDynamic<Address>(json['address']),
     balance: MoneyFromJson(json['balance']),
+    paymentMethod: Serializer.fromDynamic<PaymentMethod>(json['paymentMethod']),
   );
 }
 
@@ -149,8 +226,9 @@ extension UserProfileSerializer on UserProfile {
       'tags': (tags as List).map((e) => e).toList(),
       'scores': (scores as Set).map((e) => e).toList(),
       'metadata': (metadata as Map).map((k, v) => MapEntry(k.toString(), v)),
-      'address': address.toJson(),
+      'address': Serializer.encodeDynamic(address),
       'balance': MoneyToJson(balance),
+      'paymentMethod': Serializer.encodeDynamic(paymentMethod),
     };
   }
 }

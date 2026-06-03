@@ -12,6 +12,9 @@ class Serializer {
       <Type, JsonFactory<dynamic>>{};
   static final Map<Type, JsonEncoder<dynamic>> _encoders =
       <Type, JsonEncoder<dynamic>>{};
+  static final Map<Type, String> _unionTypeFields = <Type, String>{};
+  static final Map<Type, Map<String, JsonFactory<dynamic>>> _unionFactories =
+      <Type, Map<String, JsonFactory<dynamic>>>{};
 
   /// Registers conversion functions for a specific type.
   static void register<T>({
@@ -20,6 +23,26 @@ class Serializer {
   }) {
     _factories[T] = (Map<String, dynamic> json) => fromJson(json);
     _encoders[T] = (dynamic value) => toJson(value as T);
+  }
+
+  /// Registers a union subtype factory under a discriminator value.
+  static void registerUnion<T>({
+    required String typeField,
+    required String discriminator,
+    required JsonFactory<T> fromJson,
+  }) {
+    final String? existingTypeField = _unionTypeFields[T];
+    if (existingTypeField != null && existingTypeField != typeField) {
+      throw StateError(
+        'Union type field mismatch for $T: '
+        'existing "$existingTypeField", incoming "$typeField".',
+      );
+    }
+
+    _unionTypeFields[T] = typeField;
+    final Map<String, JsonFactory<dynamic>> unions =
+        _unionFactories.putIfAbsent(T, () => <String, JsonFactory<dynamic>>{});
+    unions[discriminator] = (Map<String, dynamic> json) => fromJson(json);
   }
 
   /// Serializes [value] to JSON text.
@@ -31,7 +54,11 @@ class Serializer {
   /// Deserializes JSON text into type [T].
   static T fromJson<T>(String json) {
     final dynamic decoded = jsonDecode(json);
+    return fromDynamic<T>(decoded);
+  }
 
+  /// Deserializes a decoded JSON value into type [T].
+  static T fromDynamic<T>(dynamic decoded) {
     if (decoded is Map<String, dynamic>) {
       return _decodeMap<T>(decoded);
     }
@@ -42,6 +69,9 @@ class Serializer {
 
     throw ArgumentError('Unsupported JSON payload for type $T');
   }
+
+  /// Encodes a runtime value to a JSON-compatible structure.
+  static Object? encodeDynamic(Object? value) => _encodeValue(value);
 
   /// Formats a [DateTime] with a supported [pattern].
   static String formatDate(DateTime value, String pattern) {
@@ -86,13 +116,33 @@ class Serializer {
 
   static T _decodeMap<T>(Map<String, dynamic> json) {
     final JsonFactory<dynamic>? factory = _factories[T];
-    if (factory == null) {
-      throw StateError(
-        'Type $T is not registered. Call Serializer.register<$T>() first.',
-      );
+    if (factory != null) {
+      return factory(json) as T;
     }
 
-    return factory(json) as T;
+    final Map<String, JsonFactory<dynamic>>? unionFactories = _unionFactories[T];
+    if (unionFactories != null) {
+      final String typeField = _unionTypeFields[T] ?? 'type';
+      final dynamic rawDiscriminator = json[typeField];
+      if (rawDiscriminator is! String || rawDiscriminator.isEmpty) {
+        throw ArgumentError(
+          'Missing or invalid discriminator for union $T at "$typeField".',
+        );
+      }
+
+      final JsonFactory<dynamic>? unionFactory = unionFactories[rawDiscriminator];
+      if (unionFactory == null) {
+        throw ArgumentError(
+          'Unknown discriminator "$rawDiscriminator" for union $T.',
+        );
+      }
+
+      return unionFactory(json) as T;
+    }
+
+    throw StateError(
+      'Type $T is not registered. Call Serializer.register<$T>() first.',
+    );
   }
 
   static Object? _encodeValue(Object? value) {

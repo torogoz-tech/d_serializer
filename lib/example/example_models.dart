@@ -27,6 +27,31 @@ class TitleCase {
   const TitleCase._();
 }
 
+@SerializableUnion(typeField: 'paymentType')
+sealed class PaymentMethod {
+  const PaymentMethod();
+}
+
+@Serializable(discriminator: 'card')
+class CardPayment extends PaymentMethod {
+  final String last4;
+  final String brand;
+
+  const CardPayment({
+    required this.last4,
+    required this.brand,
+  });
+}
+
+@Serializable(discriminator: 'paypal')
+class PaypalPayment extends PaymentMethod {
+  final String email;
+
+  const PaypalPayment({
+    required this.email,
+  });
+}
+
 // Enum used by the sample profile model.
 enum UserStatus {
   active,
@@ -75,7 +100,7 @@ class Address {
 // Main sample model that demonstrates most serializer features.
 @Serializable(
   naming: JsonNaming.snakeCase,
-  strict: true,
+  unknownKeyPolicy: UnknownKeyPolicy.strict,
   typeField: 'kind',
   discriminator: 'user_profile',
 )
@@ -107,6 +132,7 @@ class UserProfile {
 
   @JsonKey(converter: 'Money')
   final Money balance;
+  final PaymentMethod paymentMethod;
 
   @JsonKey(ignore: true)
   final String internalToken;
@@ -123,6 +149,7 @@ class UserProfile {
     required this.metadata,
     required this.address,
     required this.balance,
+    required this.paymentMethod,
     this.internalToken = '',
   });
 }
